@@ -153,13 +153,60 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns the total number of agents in the game
 
         gameState.isWin():
-        Returns whether or not the game state is a winning state
+        Returns whether or not the game     state is a winning state
 
         gameState.isLose():
         Returns whether or not the game state is a losing state
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        def minimax(gameState, depth, agentIndex):
+            if depth == 0 or gameState.isWin() or gameState.isLose():
+                return self.evaluationFunction(gameState), None
+
+            if agentIndex == 0:
+                return maximizer(gameState, depth, agentIndex)
+            else:
+                return minimizer(gameState, depth, agentIndex)
+
+        def minimizer(gameState, depth, agentIndex):
+            min = float('inf')
+            newAction = None
+            legalActions = gameState.getLegalActions(agentIndex)
+            gameAgents = gameState.getNumAgents()
+            newDepth = depth
+            newAgent = agentIndex + 1
+
+            if agentIndex == gameAgents - 1:
+                newDepth = depth - 1
+                newAgent = 0
+            for action in legalActions:
+                successorGameState = gameState.generateSuccessor(agentIndex, action)
+                value, newAction = minimax(successorGameState, newDepth, newAgent)
+
+                if value < min:
+                    min = value
+                    newAction = action
+
+            return min, newAction
+
+
+        def maximizer(gameState, depth, agentIndex):
+            max = float('-inf')
+            newAction = None
+            legalActions = gameState.getLegalActions(agentIndex)
+
+            for action in legalActions:
+                successorState = gameState.generateSuccessor(agentIndex, action)
+                value, _ = minimax(successorState, depth, 1)
+
+                if value > max:
+                    max = value
+                    newAction = action
+
+            return max, newAction
+
+        finValue, finAction = minimax(gameState, self.depth, 0)
+        return finAction
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
