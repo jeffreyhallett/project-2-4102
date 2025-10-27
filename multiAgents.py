@@ -221,7 +221,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         def alphabeta(gameState, depth, agentIndex, alpha, beta):
             if depth == 0 or gameState.isWin() or gameState.isLose():
                 return self.evaluationFunction(gameState), None
-
             if agentIndex == 0:
                 return maximizer(gameState, depth, agentIndex, alpha, beta)
             else:
@@ -292,7 +291,54 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        def expectiMax(gameState, depth, agentIndex):
+            if depth == 0 or gameState.isWin() or gameState.isLose():
+                return self.evaluationFunction(gameState), None
+
+            if agentIndex == 0:
+                return maximizer(gameState, depth, agentIndex)
+            else:
+                return expectedValue(gameState, depth, agentIndex)
+
+        def expectedValue(gameState, depth, agentIndex):
+            expVal = 0
+            newAction = None
+            legalActions = gameState.getLegalActions(agentIndex)
+            gameAgents = gameState.getNumAgents()
+            newDepth = depth
+            newAgent = agentIndex + 1
+
+            if agentIndex == gameAgents - 1:
+                newDepth = depth - 1
+                newAgent = 0
+            for action in legalActions:
+                successorGameState = gameState.generateSuccessor(agentIndex, action)
+                value, newAction = expectiMax(successorGameState, newDepth, newAgent)
+
+                p = 1/(len(gameState.getLegalActions(agentIndex)))
+                expVal += p * value
+
+
+            return expVal, newAction
+
+
+        def maximizer(gameState, depth, agentIndex):
+            maxValue = float('-inf')
+            newAction = None
+            legalActions = gameState.getLegalActions(agentIndex)
+
+            for action in legalActions:
+                successorState = gameState.generateSuccessor(agentIndex, action)
+                value, _ = expectiMax(successorState, depth, 1)
+
+                if value > maxValue:
+                    maxValue = value
+                    newAction = action
+
+            return maxValue, newAction
+
+        finValue, finAction = expectiMax(gameState, self.depth, 0)
+        return finAction
 
 def betterEvaluationFunction(currentGameState):
     """
